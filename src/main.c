@@ -4,10 +4,12 @@
 #include "uart.h"
 #include "timer.h"
 #include "music.h"
+#include "i2c.h"
 
 int main() {
   sysclock_init();
   systick_init();
+  init_i2c1();
 
   bool out = true;
 
@@ -16,6 +18,18 @@ int main() {
   set_tim1_pwm_off();
   struct pin pin = (struct pin){BANKA, 5};
   struct pin pin_debug = (struct pin){BANKA, 6};
+
+  struct pin scl = (struct pin){BANKB, 8};
+  struct pin sda = (struct pin){BANKB, 9};
+  gpio_set_mode(scl, GPIO_MODE_AF);
+  gpio_set_mode(sda, GPIO_MODE_AF);
+  gpio_set_af(sda, 6);
+  gpio_set_af(scl, 6);
+  GPIOB->OTYPER |=  (0x3 << 8);    // Open-drain
+  GPIOB->PUPDR  &= ~(0xF << 16);
+  GPIOB->PUPDR  |=  (0x5 << 16);
+
+
   gpio_set_mode(pin, GPIO_MODE_AF);
   gpio_set_mode(pin_debug, GPIO_MODE_OUTPUT);
   gpio_set_af(pin, 5);
@@ -26,10 +40,16 @@ int main() {
     delay(500);
   }
 
+  uint8_t data_on[] = {0b00000000, 0b10100101};
+  uint8_t data_off[] = {0b00000000, 0b10100100};
+  uint8_t display_on[] = {0x0, 0xAE, 0x8D, 0x14, 0xAF};
+  if (send_byte(0b0111100, display_on, 5)) gpio_write(pin_debug, 1);
   while (1) {
+
     gpio_write(pin_debug, 0);
+    if (send_byte(0b0111100, data_on, 2)) gpio_write(pin_debug, 1);
     play_song_cords(ieji_cords, 22);
-    gpio_write(pin_debug, 1);
+    if (send_byte(0b0111100, data_off, 2)) gpio_write(pin_debug, 1);
     delay(4000);
   }
 
