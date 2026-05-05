@@ -31,5 +31,6 @@ make flash
 - [STM32C031Cx datasheet](https://www.st.com/resource/en/datasheet/stm32c031c4.pdf)
 - [ARM Cortex M0+ Documentation](https://developer.arm.com/documentation/dui0662/b)
 - [Nucleo C031C6 user manual](https://www.st.com/resource/en/user_manual/um2953-stm32-nucleo64-board-mb1717-stmicroelectronics.pdf)
+- [SSD1306 reference manual](https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf)
 
 
