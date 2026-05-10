@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "music.h"
 #include "i2c.h"
+#include "ssd1306.h"
 
 int main() {
   sysclock_init();
@@ -40,9 +41,13 @@ int main() {
     delay(500);
   }
 
-  uint8_t data_on[] = {0b00000000, 0b10100101};
-  uint8_t data_off[] = {0b00000000, 0b10100100};
-  uint8_t display_on[] = {0x0, 0xAE, 0x8D, 0x14, 0xAF};
+  uint8_t data_on[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_ON};
+  uint8_t data_off[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_RAM};
+  uint8_t display_on[] = {
+    CTRL_MULT_CMD,
+    CMD_SET_DIS_OFF,
+    CMD_CHARGE_PUMP_SETTING, CMD_CHARGE_PUMP_EN,
+    CMD_SET_DIS_ON};
   if (send_byte(0b0111100, display_on, 5)) gpio_write(pin_debug, 1);
   while (1) {
 
