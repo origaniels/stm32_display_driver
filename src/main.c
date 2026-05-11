@@ -57,12 +57,14 @@ int main() {
   if (send_byte(SSD1306_DEV_ADDR, display_on, 5)) gpio_write(pin_debug, 1);
   if (send_byte(SSD1306_DEV_ADDR, data_off, 2)) gpio_write(pin_debug, 1);
   ssd1306_clear_display();
+  ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 4, 64);
+  ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 42);
+  ssd1306_configure_scroll(0, 4, 4, SPD_3FRAMES, 0);
   while (1) {
-    for (int col = 0; col<120; col++) {
-      ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 4, col);
-      ssd1306_clear_display();
-    }
-    delay(2000);
+    ssd1306_start_scroll();
+    delay(10000);
+    ssd1306_stop_scroll();
+    delay(500);
   }
 
   return 0;
