@@ -1,5 +1,12 @@
 # Overview
+
+The goal of this small project is to write a small driver for the SSD1306 I2C display using the STM32C031C6's I2C IP.
+The driver should be as exhaustive as possible so as to allow for the best flexibility between performance and simplicity.
+
 # Conclusions & Takeways
+
+In progress...
+
 # Dependencies
 
 To run this project you will need the following dependencies (Arch Linux):
