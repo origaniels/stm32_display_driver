@@ -1,26 +1,22 @@
 BAUDRATE=115200
 BIN=build
 SRC=src
-OBJS=$(BIN)/main.o $(BIN)/gpio.o $(BIN)/uart.o
+SOURCES=$(wildcard $(SRC)/*.c)
+OBJS=$(patsubst $(SRC)/%.c, $(BIN)/%.o, $(SOURCES))
 CFLAGS=-mcpu=cortex-m0plus -O3 -ffreestanding
 LDFLAGS=-T ldscript.ld -nostdlib
 
 CC=arm-none-eabi-gcc
 OBJCPY=arm-none-eabi-objcopy
 
+
 all: bin
 
 $(BIN):
-	mkdir $(BIN)
+	mkdir -p $(BIN)
 
-$(BIN)/gpio.o: $(BIN)
-	$(CC) $(CFLAGS) $(SRC)/gpio.c -c -o $(BIN)/gpio.o
-
-$(BIN)/uart.o: $(BIN)
-	$(CC) $(CFLAGS) $(SRC)/uart.c -c -o $(BIN)/uart.o
-
-$(BIN)/main.o: $(BIN)
-	$(CC) $(CFLAGS) $(SRC)/main.c -c -o $(BIN)/main.o
+$(BIN)/%.o: $(SRC)/%.c $(BIN)
+	$(CC) $(CFLAGS) $< -c -o $@
 
 elf: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $(BIN)/firmware.elf
