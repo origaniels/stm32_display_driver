@@ -46,6 +46,21 @@
 #define CMD_CHARGE_PUMP_EN                0b00010100
 #define CMD_CHARGE_PUMP_DIS               0b00010000
 
+/* configures the ssd1306 display over i2c
+ * Assumes i2c was already configured on the correct pins. */
+int ssd1306_init() {
+  uint8_t display_on[] = {
+    CTRL_MULT_CMD,
+    CMD_SET_DIS_OFF,
+    CMD_CHARGE_PUMP_SETTING, CMD_CHARGE_PUMP_EN,
+    CMD_SET_DIS_ON};
+  if (send_byte(SSD1306_DEV_ADDR, display_on, sizeof(display_on))) return 1;
+
+  uint8_t data_off[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_RAM};
+  if (send_byte(SSD1306_DEV_ADDR, data_off, sizeof(data_off))) return 1;
+  return 0;
+}
+
 void ssd1306_clear_display() {
   uint8_t clear_page[SSD1306_NB_COL_PER_PAGE+1];
   for (int i = 0; i<SSD1306_NB_COL_PER_PAGE; i++){

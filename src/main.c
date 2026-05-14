@@ -18,29 +18,23 @@ int main() {
   struct pin pin = (struct pin){BANKA, 5};
   struct pin pin_debug = (struct pin){BANKA, 6};
 
+  /* configure gpio for i2c */
   struct pin scl = (struct pin){BANKB, 8};
   struct pin sda = (struct pin){BANKB, 9};
   gpio_set_mode(scl, GPIO_MODE_AF);
   gpio_set_mode(sda, GPIO_MODE_AF);
   gpio_set_af(sda, 6);
   gpio_set_af(scl, 6);
-  GPIOB->OTYPER |=  (0x3 << 8);    // Open-drain
+  GPIOB->OTYPER |=  (0x3 << 8);
   GPIOB->PUPDR  &= ~(0xF << 16);
   GPIOB->PUPDR  |=  (0x5 << 16);
-
 
   gpio_set_mode(pin, GPIO_MODE_AF);
   gpio_set_mode(pin_debug, GPIO_MODE_OUTPUT);
   gpio_set_af(pin, 5);
 
-  uint8_t data_on[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_ON};
-  uint8_t data_off[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_RAM};
-  uint8_t display_on[] = {
-    CTRL_MULT_CMD,
-    CMD_SET_DIS_OFF,
-    CMD_CHARGE_PUMP_SETTING, CMD_CHARGE_PUMP_EN,
-    CMD_SET_DIS_ON};
 
+  ssd1306_init();
   const uint8_t invader_nb_pages = 1;
   const uint8_t invader_nb_col = 8;
   uint8_t invader[] = {
@@ -54,8 +48,6 @@ int main() {
     0b00011001
   };
 
-  if (send_byte(SSD1306_DEV_ADDR, display_on, 5)) gpio_write(pin_debug, 1);
-  if (send_byte(SSD1306_DEV_ADDR, data_off, 2)) gpio_write(pin_debug, 1);
   ssd1306_clear_display();
   ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 4, 64);
   ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 42);
