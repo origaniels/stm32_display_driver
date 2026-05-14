@@ -1,9 +1,10 @@
 BAUDRATE=115200
 BIN=build
 SRC=src
+INC=include
 SOURCES=$(wildcard $(SRC)/*.c)
 OBJS=$(patsubst $(SRC)/%.c, $(BIN)/%.o, $(SOURCES))
-CFLAGS=-mcpu=cortex-m0plus -O3 -ffreestanding
+CFLAGS=-mcpu=cortex-m0plus -O3 -ffreestanding -Iinclude
 LDFLAGS=-T ldscript.ld -nostdlib
 
 CC=arm-none-eabi-gcc
