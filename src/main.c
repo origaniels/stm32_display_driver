@@ -51,7 +51,12 @@ int main() {
   ssd1306_clear_display();
   ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 4, 64);
   ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 42);
-  ssd1306_configure_scroll(0, 4, 4, SPD_3FRAMES, 0);
+
+
+  uint8_t start_page = 3, end_page = 5;
+  uint8_t vertical_offset = 1;
+  bool direction = false;
+  ssd1306_configure_scroll(direction, start_page, end_page, SPD_3FRAMES, vertical_offset);
   while (1) {
     ssd1306_start_scroll();
     delay(10000);

@@ -24,6 +24,7 @@
 #define CMD_SCROLL_OFF          0b00101110
 #define CMD_SCROLL_HOR_CFG(X)       (0b0010011<<1) | X
 #define CMD_SCROLL_VERT_HOR_CFG(X)  (0b001010<<2) | X
+#define CMD_SCROLL_VERT_AREA    0b10100011
 #define CMD_COL_START_ADDR_LOW(X)   (0b0000<<4) | X   /* 0 <= X <= 15 */
 #define CMD_COL_START_ADDR_HIGH(X)  (0b0001<<4) | X  /* 0 <= X <= 15 */
 #define CMD_SET_ADDR_MODE       0b00100000
@@ -119,6 +120,14 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
 
   if (vertical_offset) {
     uint8_t vertical_direction = 1<<direction;
+
+    uint8_t area[] = {
+      CTRL_MULT_CMD,
+      CMD_SCROLL_VERT_AREA,
+      0x00,
+      0x40
+    };
+    if (send_byte(SSD1306_DEV_ADDR, area, sizeof(area))) return 1;
     uint8_t configure[] = {
       CTRL_MULT_CMD,
       CMD_SCROLL_VERT_HOR_CFG(vertical_direction),
