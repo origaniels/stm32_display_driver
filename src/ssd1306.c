@@ -14,10 +14,10 @@ int ssd1306_init() {
     CMD_SET_DIS_OFF,
     CMD_CHARGE_PUMP_SETTING, CMD_CHARGE_PUMP_EN,
     CMD_SET_DIS_ON};
-  if (send_byte(SSD1306_DEV_ADDR, display_on, sizeof(display_on))) return 1;
+  if (send_bytes(SSD1306_DEV_ADDR, display_on, sizeof(display_on))) return 1;
 
   uint8_t data_off[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_RAM};
-  if (send_byte(SSD1306_DEV_ADDR, data_off, sizeof(data_off))) return 1;
+  if (send_bytes(SSD1306_DEV_ADDR, data_off, sizeof(data_off))) return 1;
   return 0;
 }
 
@@ -27,7 +27,7 @@ int ssd1306_set_addr_mode(enum addr_mode mode) {
     CMD_SET_ADDR_MODE,
     mode
   };
-  if (send_byte(SSD1306_DEV_ADDR, set_mode, sizeof(set_mode))) return 1;
+  if (send_bytes(SSD1306_DEV_ADDR, set_mode, sizeof(set_mode))) return 1;
 
   cur_addr_mode = mode;
   return 0;
@@ -48,8 +48,8 @@ void ssd1306_clear_display() {
       CMD_COL_START_ADDR_HIGH(0)
     };
 
-    send_byte(SSD1306_DEV_ADDR, set_page, 4);
-    send_byte(SSD1306_DEV_ADDR, clear_page, SSD1306_NB_COL_PER_PAGE+1);
+    send_bytes(SSD1306_DEV_ADDR, set_page, 4);
+    send_bytes(SSD1306_DEV_ADDR, clear_page, SSD1306_NB_COL_PER_PAGE+1);
   }
 }
 
@@ -58,7 +58,7 @@ int ssd1306_stop_scroll() {
     CTRL_SINGLE_CMD,
     CMD_SCROLL_OFF
   };
-  return send_byte(SSD1306_DEV_ADDR, set_scroll_off, 2);
+  return send_bytes(SSD1306_DEV_ADDR, set_scroll_off, 2);
 }
 
 int ssd1306_start_scroll() {
@@ -66,7 +66,7 @@ int ssd1306_start_scroll() {
     CTRL_SINGLE_CMD,
     CMD_SCROLL_ON
   };
-  return send_byte(SSD1306_DEV_ADDR, set_scroll_on, 2);
+  return send_bytes(SSD1306_DEV_ADDR, set_scroll_on, 2);
 }
 
 /* Configures the scrolling mechanism.
@@ -90,7 +90,7 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
       0x00,
       0x40
     };
-    if (send_byte(SSD1306_DEV_ADDR, area, sizeof(area))) return 1;
+    if (send_bytes(SSD1306_DEV_ADDR, area, sizeof(area))) return 1;
     uint8_t configure[] = {
       CTRL_MULT_CMD,
       CMD_SCROLL_VERT_HOR_CFG(vertical_direction),
@@ -100,7 +100,7 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
       end_page,
       vertical_offset,
     };
-    if (send_byte(SSD1306_DEV_ADDR, configure, sizeof(configure))) return 1;
+    if (send_bytes(SSD1306_DEV_ADDR, configure, sizeof(configure))) return 1;
   } else {
     uint8_t configure[] = {
       CTRL_MULT_CMD,
@@ -112,7 +112,7 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
       0x0, // dummy byte
       0xff, // dummy byte
     };
-    if (send_byte(SSD1306_DEV_ADDR, configure, sizeof(configure))) return 1;
+    if (send_bytes(SSD1306_DEV_ADDR, configure, sizeof(configure))) return 1;
   }
 
   return 0;
@@ -148,8 +148,8 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
         }
         data[0] = CTRL_MULT_DATA;
 
-        if (send_byte(SSD1306_DEV_ADDR, set_page_num, 4)) return 1;
-        if (send_byte(SSD1306_DEV_ADDR, data, nb_col+1)) return 1;
+        if (send_bytes(SSD1306_DEV_ADDR, set_page_num, 4)) return 1;
+        if (send_bytes(SSD1306_DEV_ADDR, data, nb_col+1)) return 1;
       }
       break;
     case ADDR_MODE_HORIZONTAL:
@@ -167,8 +167,8 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
           start_col+nb_col-1,
         };
 
-        if (send_byte(SSD1306_DEV_ADDR, page_addr, sizeof(page_addr))) return 1;
-        if (send_byte(SSD1306_DEV_ADDR, col_addr, sizeof(col_addr))) return 1;
+        if (send_bytes(SSD1306_DEV_ADDR, page_addr, sizeof(page_addr))) return 1;
+        if (send_bytes(SSD1306_DEV_ADDR, col_addr, sizeof(col_addr))) return 1;
 
         uint32_t remaining_col = nb_pages * nb_col;
         uint8_t size = SSD1306_MAX_BYTES_PER_CMD;
@@ -179,18 +179,18 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
           for (int i = 0; i<size-1; i++) {
             data[i+1] = img[(size-1)*count + i];
           }
-          if (send_byte(SSD1306_DEV_ADDR, data, sizeof(data))) return 1;
+          if (send_bytes(SSD1306_DEV_ADDR, data, sizeof(data))) return 1;
           count++;
         }
         if (remaining_col > 1) {
           for (int i = 0; i<remaining_col; i++) {
             data[i+1] = img[(size-1)*count + i];
           }
-          if (send_byte(SSD1306_DEV_ADDR, data, remaining_col+1)) return 1;
+          if (send_bytes(SSD1306_DEV_ADDR, data, remaining_col+1)) return 1;
         } else if (remaining_col) {
           data[0] = CTRL_SINGLE_DATA;
           data[1] = img[(size-1)*count];
-          if (send_byte(SSD1306_DEV_ADDR, data, 2)) return 1;
+          if (send_bytes(SSD1306_DEV_ADDR, data, 2)) return 1;
         }
         break;
       }

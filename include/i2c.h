@@ -38,5 +38,5 @@ struct i2c {
 #define I2C1 ((struct i2c *)0x40005400)
 
 void init_i2c1();
-int send_byte(uint8_t addr, uint8_t *data, uint8_t size);
+int send_bytes(uint8_t addr, uint8_t *data, uint8_t size);
 

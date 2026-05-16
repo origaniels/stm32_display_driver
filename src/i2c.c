@@ -6,7 +6,7 @@ void init_i2c1() {
   SET_BIT(I2C1->CR1, 0); //PE
 }
 
-int send_byte(uint8_t addr, uint8_t *data, uint8_t size) {
+int send_bytes(uint8_t addr, uint8_t *data, uint8_t size) {
   I2C1->CR2.SADD = addr<<1;
   I2C1->CR2.NBYTES = size;
   I2C1->CR2.AUTOEND = 1;
