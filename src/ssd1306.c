@@ -1,7 +1,14 @@
 #include "ssd1306.h"
+#include <stdint.h>
+
+
+enum addr_mode cur_addr_mode = ADDR_MODE_PAGE;
+
 /* configures the ssd1306 display over i2c
  * Assumes i2c was already configured on the correct pins. */
 int ssd1306_init() {
+  if (ssd1306_set_addr_mode(ADDR_MODE_PAGE)) return 1;
+
   uint8_t display_on[] = {
     CTRL_MULT_CMD,
     CMD_SET_DIS_OFF,
@@ -11,6 +18,18 @@ int ssd1306_init() {
 
   uint8_t data_off[] = {CTRL_MULT_CMD, CMD_ENTIRE_DISPLAY_RAM};
   if (send_byte(SSD1306_DEV_ADDR, data_off, sizeof(data_off))) return 1;
+  return 0;
+}
+
+int ssd1306_set_addr_mode(enum addr_mode mode) {
+  uint8_t set_mode[] = {
+    CTRL_MULT_CMD,
+    CMD_SET_ADDR_MODE,
+    mode
+  };
+  if (send_byte(SSD1306_DEV_ADDR, set_mode, sizeof(set_mode))) return 1;
+
+  cur_addr_mode = mode;
   return 0;
 }
 
@@ -105,22 +124,78 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
  * Each page being a succession of columns */
 int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_col,
                 uint8_t start_page, uint8_t start_col) {
-  for (int page = 0; page<nb_pages; page++) {
-    uint8_t set_page_num[] = {
-      CTRL_MULT_CMD,
-      CMD_SET_PAGE_START(page+start_page),
-      CMD_COL_START_ADDR_LOW(start_col & 0xF),
-      CMD_COL_START_ADDR_HIGH(start_col>>4)
-    };
+  if (nb_pages > SSD1306_NB_PAGES) return 1;
+  if (!nb_pages) return 1;
+  if (nb_pages+start_page > SSD1306_NB_PAGES) return 1;
 
-    uint8_t data[nb_col+1];
-    for (int i = 0; i<nb_col; i++) {
-      data[i+1] = img[(page*nb_col)+i];
-    }
-    data[0] = CTRL_MULT_DATA;
+  if (!nb_col) return 1;
+  if (nb_col > SSD1306_NB_COL_PER_PAGE) return 1;
+  if (nb_col+start_col > SSD1306_NB_COL_PER_PAGE) return 1;
 
-    if (send_byte(SSD1306_DEV_ADDR, set_page_num, 4)) return 1;
-    if (send_byte(SSD1306_DEV_ADDR, data, nb_col+1)) return 1;
+  switch (cur_addr_mode) {
+    case ADDR_MODE_PAGE:
+      for (int page = 0; page<nb_pages; page++) {
+        uint8_t set_page_num[] = {
+          CTRL_MULT_CMD,
+          CMD_SET_PAGE_START(page+start_page),
+          CMD_COL_START_ADDR_LOW(start_col & 0xF),
+          CMD_COL_START_ADDR_HIGH(start_col>>4)
+        };
+
+        uint8_t data[nb_col+1];
+        for (int i = 0; i<nb_col; i++) {
+          data[i+1] = img[(page*nb_col)+i];
+        }
+        data[0] = CTRL_MULT_DATA;
+
+        if (send_byte(SSD1306_DEV_ADDR, set_page_num, 4)) return 1;
+        if (send_byte(SSD1306_DEV_ADDR, data, nb_col+1)) return 1;
+      }
+      break;
+    case ADDR_MODE_HORIZONTAL:
+      {
+        uint8_t page_addr[] = {
+          CTRL_MULT_CMD,
+          CMD_SET_PAGE_ADDR,
+          start_page,
+          start_page+nb_pages-1,
+        };
+        uint8_t col_addr[] = {
+          CTRL_MULT_CMD,
+          CMD_SET_COL_ADDR,
+          start_col,
+          start_col+nb_col-1,
+        };
+
+        if (send_byte(SSD1306_DEV_ADDR, page_addr, sizeof(page_addr))) return 1;
+        if (send_byte(SSD1306_DEV_ADDR, col_addr, sizeof(col_addr))) return 1;
+
+        uint32_t remaining_col = nb_pages * nb_col;
+        uint8_t size = SSD1306_MAX_BYTES_PER_CMD;
+        uint8_t data[size];
+        uint8_t count;
+        data[0] = CTRL_MULT_DATA;
+        while (remaining_col > size-1) {
+          for (int i = 0; i<size-1; i++) {
+            data[i+1] = img[(size-1)*count + i];
+          }
+          if (send_byte(SSD1306_DEV_ADDR, data, sizeof(data))) return 1;
+          count++;
+        }
+        if (remaining_col > 1) {
+          for (int i = 0; i<remaining_col; i++) {
+            data[i+1] = img[(size-1)*count + i];
+          }
+          if (send_byte(SSD1306_DEV_ADDR, data, remaining_col+1)) return 1;
+        } else if (remaining_col) {
+          data[0] = CTRL_SINGLE_DATA;
+          data[1] = img[(size-1)*count];
+          if (send_byte(SSD1306_DEV_ADDR, data, 2)) return 1;
+        }
+        break;
+      }
+    default: return 1;
   }
+
   return 0;
 }

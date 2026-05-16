@@ -7,6 +7,7 @@
 #define SSD1306_DEV_ADDR 0b0111100
 #define SSD1306_NB_PAGES 8
 #define SSD1306_NB_COL_PER_PAGE 128
+#define SSD1306_MAX_BYTES_PER_CMD 255
 
 #define CTRL_SINGLE_CMD   0b10000000
 #define CTRL_MULT_CMD     0b00000000
@@ -47,7 +48,16 @@
 #define CMD_CHARGE_PUMP_EN                0b00010100
 #define CMD_CHARGE_PUMP_DIS               0b00010000
 
+enum addr_mode {
+  ADDR_MODE_HORIZONTAL=0b00,
+  ADDR_MODE_VERTICAL=0b01,
+  ADDR_MODE_PAGE=0b10,
+};
+
+extern enum addr_mode cur_addr_mode;
+
 int ssd1306_init();
+int ssd1306_set_addr_mode(enum addr_mode mode);
 void ssd1306_clear_display();
 
 enum scroll_speed {
@@ -57,6 +67,8 @@ enum scroll_speed {
   SPD_5FRAMES=0b000,
   SPD_25FRAMES=0b110,
 };
+
+
 
 int ssd1306_stop_scroll();
 int ssd1306_start_scroll();
