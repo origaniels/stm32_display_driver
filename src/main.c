@@ -88,6 +88,27 @@ int main() {
     0b00000011,
 
   };
+  const uint8_t vert_invader_nb_pages = 2;
+  const uint8_t vert_invader_nb_col = 16;
+  uint8_t vert_invader[] = {
+    /* first page */
+    0b11000011,0b00000011,
+    0b11000011,0b00000011,
+    0b11001100,0b00001111,
+    0b11001100,0b00001111,
+    0b11110011,0b00111100,
+    0b11110011,0b00111100,
+    0b11001100,0b00111111,
+    0b11001100,0b00111111,
+    0b11001100,0b00111111,
+    0b11001100,0b00111111,
+    0b11110011,0b00111100,
+    0b11110011,0b00111100,
+    0b11001100,0b00001111,
+    0b11001100,0b00001111,
+    0b11000011,0b00000011,
+    0b11000011,0b00000011,
+  };
   ssd1306_clear_display();
   ssd1306_set_addr_mode(ADDR_MODE_HORIZONTAL);
   if (ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 42))
@@ -96,6 +117,9 @@ int main() {
   if (ssd1306_write_image(big_invader, big_invader_nb_pages, big_invader_nb_col, 2, 42))
     gpio_write(pin_debug, 1);
 
+  ssd1306_set_addr_mode(ADDR_MODE_VERTICAL);
+  if (ssd1306_write_image(vert_invader, vert_invader_nb_pages, vert_invader_nb_col, 2, 10))
+    gpio_write(pin_debug, 1);
   uint8_t start_page = 2, end_page = 5;
   uint8_t vertical_offset = 0;
   bool direction = false;

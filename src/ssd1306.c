@@ -120,8 +120,9 @@ int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_pag
 
 /* Displays an image on the display.
  * img is an array of unsigned char. With a maximum size of 128*8 bytes.
- * It's layout is a succession of pages.
- * Each page being a succession of columns */
+ * It's layout depends on the addressing mode.
+ * im g will be interpreted as a succession of columns.
+ * The visual order will depend on addressing mode. */
 int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_col,
                 uint8_t start_page, uint8_t start_col) {
   if (nb_pages > SSD1306_NB_PAGES) return 1;
@@ -153,6 +154,7 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
       }
       break;
     case ADDR_MODE_HORIZONTAL:
+    case ADDR_MODE_VERTICAL:
       {
         uint8_t page_addr[] = {
           CTRL_MULT_CMD,
