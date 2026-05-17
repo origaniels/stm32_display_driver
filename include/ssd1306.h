@@ -68,11 +68,12 @@ enum scroll_speed {
   SPD_25FRAMES=0b110,
 };
 
-
-
 int ssd1306_stop_scroll();
 int ssd1306_start_scroll();
 int ssd1306_configure_scroll(bool direction, uint8_t start_page, uint8_t end_page,
                               enum scroll_speed speed, uint8_t vertical_offset);
 int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_col,
                 uint8_t start_page, uint8_t start_col);
+int ssd1306_print_char(char c, uint8_t page_num, uint8_t col_num);
+int ssd1306_print(char *str, uint8_t page_num, uint8_t col_num);
+

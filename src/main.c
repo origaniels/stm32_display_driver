@@ -111,7 +111,7 @@ int main() {
   };
   ssd1306_clear_display();
   ssd1306_set_addr_mode(ADDR_MODE_HORIZONTAL);
-  if (ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 42))
+  if (ssd1306_print("HELLO WORLD!", 6, 16))
     gpio_write(pin_debug, 1);
 
   if (ssd1306_write_image(big_invader, big_invader_nb_pages, big_invader_nb_col, 2, 42))

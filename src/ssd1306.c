@@ -1,5 +1,6 @@
-#include "ssd1306.h"
 #include <stdint.h>
+#include "ssd1306.h"
+#include "ssd1306_assets.h"
 
 
 enum addr_mode cur_addr_mode = ADDR_MODE_PAGE;
@@ -201,3 +202,34 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
 
   return 0;
 }
+
+int ssd1306_print(char *str, uint8_t page_num, uint8_t col_num) {
+  char *cur_str = str;
+  uint8_t size = 0;
+
+  while (*cur_str++) {
+    size++;
+  }
+  for (int i = size-1; i >= 0; i--) {
+    if (ssd1306_print_char(str[i], page_num, col_num+=5)) return 1;
+  }
+
+  return 0;
+}
+
+int ssd1306_print_char(char c, uint8_t page_num, uint8_t col_num) {
+  if (c <= 'Z' && 'A' <= c) {
+    uint8_t char_offset = c-'A';
+    return ssd1306_write_image(chars[char_offset], 1, 5, page_num, col_num);
+  } else if (c == '!') {
+    return ssd1306_write_image(asset_excl, 1, 3, page_num, col_num);
+  } else if (c == '.') {
+    return ssd1306_write_image(asset_period, 1, 3, page_num, col_num);
+  } else if (c == ' ') {
+    return ssd1306_write_image(asset_space, 1, 3, page_num, col_num);
+  }
+
+
+  return 0;
+}
+
