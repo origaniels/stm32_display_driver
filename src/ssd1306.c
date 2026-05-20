@@ -174,22 +174,20 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
 
         uint32_t remaining_col = nb_pages * nb_col;
         uint8_t size = SSD1306_MAX_BYTES_PER_CMD;
-        uint8_t data[size];
         uint8_t count;
-        data[0] = CTRL_MULT_DATA;
+        uint8_t ctrl = CTRL_MULT_DATA;
         while (remaining_col > size-1) {
-          for (int i = 0; i<size-1; i++) {
-            data[i+1] = img[(size-1)*count + i];
-          }
-          if (send_bytes(SSD1306_DEV_ADDR, data, sizeof(data))) return 1;
+          if (init_transaction(SSD1306_DEV_ADDR, size)) return 1;
+          if (send_fleet(&ctrl, 1)) return 1;
+          if (send_fleet(&img[(size-1)*count], size-1)) return 1;
           count++;
         }
         if (remaining_col > 1) {
-          for (int i = 0; i<remaining_col; i++) {
-            data[i+1] = img[(size-1)*count + i];
-          }
-          if (send_bytes(SSD1306_DEV_ADDR, data, remaining_col+1)) return 1;
+          if (init_transaction(SSD1306_DEV_ADDR, remaining_col+1)) return 1;
+          if (send_fleet(&ctrl, 1)) return 1;
+          if (send_fleet(&img[(size-1)*count], remaining_col)) return 1;
         } else if (remaining_col) {
+          uint8_t data[2];
           data[0] = CTRL_SINGLE_DATA;
           data[1] = img[(size-1)*count];
           if (send_bytes(SSD1306_DEV_ADDR, data, 2)) return 1;
@@ -212,7 +210,6 @@ int ssd1306_print(char *str, uint8_t page_num, uint8_t col_num) {
   for (int i = size-1; i >= 0; i--) {
     if (ssd1306_print_char(str[i], page_num, col_num+=5)) return 1;
   }
-
   return 0;
 }
 
@@ -227,7 +224,6 @@ int ssd1306_print_char(char c, uint8_t page_num, uint8_t col_num) {
   } else if (c == ' ') {
     return ssd1306_write_image(asset_space, 1, 3, page_num, col_num);
   }
-
 
   return 0;
 }
