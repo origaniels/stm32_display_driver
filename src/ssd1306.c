@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "ssd1306.h"
+#include "i2c.h"
 #include "ssd1306_assets.h"
 
 
@@ -144,14 +145,12 @@ int ssd1306_write_image(uint8_t *img, const uint8_t nb_pages, const uint8_t nb_c
           CMD_COL_START_ADDR_HIGH(start_col>>4)
         };
 
-        uint8_t data[nb_col+1];
-        for (int i = 0; i<nb_col; i++) {
-          data[i+1] = img[(page*nb_col)+i];
-        }
-        data[0] = CTRL_MULT_DATA;
+        uint8_t ctrl = CTRL_MULT_DATA;
 
         if (send_bytes(SSD1306_DEV_ADDR, set_page_num, 4)) return 1;
-        if (send_bytes(SSD1306_DEV_ADDR, data, nb_col+1)) return 1;
+        if (init_transaction(SSD1306_DEV_ADDR, nb_col+1)) return 1;
+        if (send_fleet(&ctrl, 1)) return 1;
+        if (send_fleet(img, nb_col)) return 1;
       }
       break;
     case ADDR_MODE_HORIZONTAL:

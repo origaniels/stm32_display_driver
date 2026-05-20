@@ -110,6 +110,8 @@ int main() {
     0b11000011,0b00000011,
   };
   ssd1306_clear_display();
+  if (ssd1306_write_image(invader, invader_nb_pages, invader_nb_col, 6, 100))
+    gpio_write(pin_debug, 1);
   ssd1306_set_addr_mode(ADDR_MODE_HORIZONTAL);
   if (ssd1306_print("HELLO WORLD!", 6, 16))
     gpio_write(pin_debug, 1);
